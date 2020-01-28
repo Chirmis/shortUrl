@@ -16,6 +16,17 @@ layui.use(["element", "layer", "okUtils", "okTab", "okLayer", "okContextMenu", "
 			return data;
 		}
 	});
+	var noticeText = "";
+	$.ajax({
+		url: "https://www.zxit.top/notice.php",
+		method: "GET",
+		success: function(res){
+			noticeText = res.msg;
+		},
+		error: function(err){
+			
+		}
+	});
 	objOkTab = okTab;
 	okLoading.close();/**关闭加载动画*/
 	/**
@@ -234,8 +245,17 @@ layui.use(["element", "layer", "okUtils", "okTab", "okLayer", "okContextMenu", "
 
 	function noticeFun() {
 		var srcWidth = okUtils.getBodyWidth();
+		var text;
+		$.ajax({
+			url: "https://www.zxit.top/notice.php",
+			type: 'get',
+			success: function(res){
+				text = res.data;
+				console.log(res);
+			}
+		});
 		layer.open({
-			type: 0, title: "系统公告", btn: "我知道啦", btnAlign: 'c', content: okHoliday.getContent(),
+			type: 0, title: "系统公告", btn: "我知道啦", btnAlign: 'c', content: noticeText,
 			yes: function (index) {
 				if (srcWidth > 800) {
 					layer.tips('公告跑到这里去啦', '#notice', {
