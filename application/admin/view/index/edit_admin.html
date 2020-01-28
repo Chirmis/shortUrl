@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>修改密码</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="__STATIC__/admin/css/oksub.css">
+	<script type="text/javascript" src="__STATIC__/admin/lib/loading/okLoading.js"></script>
+</head>
+<body class="childrenBody seting-pass">
+<form class="layui-form changePwd">
+	<div class="layui-form-item">
+		<label class="layui-form-label">用户名</label>
+		<div class="layui-input-block">
+			<input type="text" value="{$adminInfo.username}" disabled class="layui-input layui-disabled" id="username" name="username">
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">旧密码</label>
+		<div class="layui-input-block">
+			<input type="password" value="" placeholder="请输入旧密码" lay-verify="required|oldPwd" class="layui-input pwd" id="oldPwd" name="oldPwd">
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">新密码</label>
+		<div class="layui-input-block">
+			<input type="password" value="" placeholder="请输入新密码" lay-verify="required|pass" id="newPwd" class="layui-input pwd" name="newPwd">
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">确认密码</label>
+		<div class="layui-input-block">
+			<input type="password" value="" placeholder="请确认密码" lay-verify="required|confirmPwd" class="layui-input pwd">
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<div class="layui-input-block">
+			<button class="layui-btn" lay-submit="" lay-filter="changePwd">立即修改</button>
+			<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+		</div>
+	</div>
+</form>
+<script type="text/javascript" src="__STATIC__/admin/lib/layui/layui.js"></script>
+<script>
+	layui.use(['form', 'layer'], function () {
+	var form = layui.form,
+		layer = layui.layer,
+		$ = layui.jquery,
+		$form = $('form');
+	okLoading.close();
+	$("#newPwd").focus(function(e){
+		if ($("#oldPwd").val() == '') {
+			layer.msg("请先输入旧密码以完成验证", {icon: 2, time: 1000}, function(){
+				$(".pwd").val('');
+				window.location.href = '';
+			});
+		}
+	});
+	$("#oldPwd").blur(function(e){
+		var oldPwd = e.target.value;
+		$.ajax({
+			url: '/admin/changeAdminInfo',
+			method: 'POST',
+			data: {
+				oldPwd: oldPwd,
+				username: $("#username").val()
+			},
+			dataType: "json",
+			success: function(res){
+				if (res.code == 0) {
+					layer.msg(res.msg, {icon: 2, time: 1000}, function(){
+						$(".pwd").val('');
+					});
+					
+				}
+			},
+			error: function(err){
+				console.log(err);
+			}
+		})
+	});
+	//添加验证规则verify
+	form.verify({
+		pass: [
+			/^[\S]{6,16}$/
+			, '密码必须6到16位，且不能出现空格'
+		],
+		confirmPwd: function (value, item) {
+			if (!new RegExp($("#newPwd").val()).test(value)) {
+				return "两次输入密码不一致，请重新输入！";
+			}
+		},
+		
+	});
+
+	//修改密码
+	form.on("submit(changePwd)", function (data) {
+		var index = layer.msg('提交中，请稍候', {icon: 16, time: false, shade: 0.8});
+		$.ajax({
+			url: '/admin/changeAdminInfo',
+			method: 'POST',
+			data: data.field,
+			dataType: "json",
+			success: function(res){
+				if (res.code == 1) {
+					layer.msg(res.msg, {icon: 1, time: 1000}, function(){
+						window.location.href = res.url;
+					});
+				}else{
+					layer.msg(res.msg, {icon: 2, time: 1000});
+				}
+			},
+			error: function(err){
+				console.log(err);
+			}
+		});
+		layer.close(index);
+		return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+	})
+
+});
+</script>
+</body>
+</html>

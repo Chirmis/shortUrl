@@ -1,0 +1,42 @@
+[
+  {
+    "title": "控制台",
+    "href": "admin/main",
+    "fontFamily": "ok-icon",
+    "icon": "&#xe6b8;",
+    "spread": true,
+    "isCheck": true
+  },
+
+  {
+    "title": "会员管理",
+    "href": "",
+    "icon": "&#xe66f;",
+    "spread": false,
+    "children": [
+      {
+        "title": "用户列表",
+        "href": "admin/user",
+        "fontFamily": "layui-icon",
+        "icon": "&#xe62e;",
+        "spread": false
+      }
+    ]
+  },
+
+  {
+    "title": "链接管理",
+    "icon": "&#xe6bf;",
+    "fontFamily": "ok-icon",
+    "spread": false,
+    "children": [
+      {
+        "title": "链接列表",
+        "href": "admin/link",
+        "fontFamily": "ok-icon",
+        "icon": "&#xe682;",
+        "spread": false
+      }
+    ]
+  }
+]
