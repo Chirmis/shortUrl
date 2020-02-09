@@ -54,10 +54,10 @@
         <!-- 巨幕 -->
         <div class="jumbotron">
             <h1 class="display-4">{if !empty($userInfo)} Hello,{$userInfo.nickname} {else /}登录更精彩！{/if}</h1>
-            <p class="lead">由开源PHP框架ThinkPHP完成, <a href="http://www.thinkphp.cn/">大道至简，十年磨一剑 - 为API开发设计的高性能框架</a></p>
+            <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
             <hr class="my-4">
-            <p>鸣谢开源后台模板-- ok-admin(一款很赞的后台模板)</p>
-            <a class="btn btn-primary btn-lg" href="http://ok-admin.xlbweb.cn/" role="button">Learn more</a>
+            <p>It uses utility classes for typography and spacing to space content out within the larger container.</p>
+            <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
         </div>
 
         <!-- 交互 -->
@@ -79,10 +79,20 @@
                     <div class="col">
                         <span>短链接有效期：</span>
                         <div>
-                            <span>两小时：</span>      <input type="radio" name="time" value="7200">
+                            <span>两小时：</span>      <input type="radio" name="time" value="7200" checked>
                             <span>一天：</span>        <input type="radio" name="time" value="86400">
                             <span>一周：</span>        <input type="radio" name="time" value="604800‬">
                             <span>永久(需<a href="/user/login">登录</a>)：</span><input type="radio" name="time" value="0" {if !empty($userInfo)} alt="{$userInfo.accesstoken}" {else /}disabled{/if}>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <span>防洪策略</span>
+                        <div>
+                            <span>无(直接跳转)：</span><input type="radio" name="type" value="0" checked>
+                            <span>应用内打开(在QQ/微信内打开)：</span><input type="radio" name="type" value="1">
+                            <span>跳转提示(提醒打开浏览器)：</span><input type="radio" name="type" value="2">
                         </div>
                     </div>
                 </div>
@@ -110,7 +120,7 @@
 
             <div class="row">
                 <div class="col">
-                    <span>短链接：</span> <input type="text" id="shorUrl"> <button class="btn">复制</button>
+                    <span>短链接：</span> <input type="text" id="shorUrl">
                 </div>
             </div>
             <div class="row" style="display: none;" id="QRcode">
@@ -130,13 +140,15 @@
     <script>
         $("#submit").click(function(){
             var checkRadio = $("input[name='time']:checked").val();
+            var checkType = $("input[name='type']:checked").val();
             var url = $("#url").val();
             $.ajax({
                 url: "/api/getShortUrl",
                 method: "POST",
                 data:{
                     url: url,
-                    time: checkRadio
+                    time: checkRadio ? checkRadio : 7200,
+                    type: checkType ? checkType : 0
                 },
                 dataType: "json",
                 success: function(res){

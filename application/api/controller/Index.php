@@ -15,24 +15,37 @@ class Index
     public function getShortUrl()
     {
         $queryData = request()->param();
-        $siteUrl = $_SERVER['REQUEST_SCHEME']."://".$_SERVER['SERVER_NAME']."/";
         //判断必要参数
+        $siteUrl = $_SERVER['REQUEST_SCHEME']."://".$_SERVER['SERVER_NAME']."/";
         if (!array_key_exists('url', $queryData) || empty($queryData['url'])) {
-            return json(['code' => 0, 'msg' => "参数错误，请正确使用！"]);
+            return json(['code' => 0, 'msg' => "参数错误，请传递链接！"]);
         }
         //检测URL格式
         if (!preg_match_all("/^(http|https):\/\/(\w+\.\w.)+(\/|\s)*(.*)/", $queryData['url'])) {
             return json(['code' => 0, 'msg' => "URL格式错误，如有疑问，请联系客服QQ:2457249379！"]);
         }
+        //检测时间是否合法
         if (array_key_exists('time', $queryData)) {
-            if ($queryData['time'] > "604800‬" || $queryData['time'] < 0) {
-                return json(['code' => 0, 'msg' => "参数错误，请正确使用！"]);
+            if ($queryData['time'] > 604800 || $queryData['time'] < 0) {
+                return json(['code' => 0, 'msg' => "参数错误，请传递规范时间！"]);
             }else {
                 $time = $queryData['time'];
             }
         }else {
             $time = 3600;
         }
+        //检测跳转类型合法
+        if (array_key_exists('type', $queryData)) {
+            $map = [0, 1, 2];
+            if (in_array($queryData['type'], $map)) {
+                $jumptype = $queryData['type'];
+            }else{
+                return json(['code' => 0, 'msg' => "参数错误，请传递跳转类型！"]);
+            }
+        }else{
+            $jumptype = 0;
+        }
+
         $cookie_token = cookie("user_accesstoken");
         $token = array_key_exists('token', $queryData) ? $queryData['token'] : $cookie_token;
         $code = getShortUrl($queryData['url']);
@@ -69,10 +82,25 @@ class Index
                 'uid'          => $uid,
                 'code'         => $code,
                 'createtime'   => date('Y-m-d H:i:s', time()),
+                'jumptype'     => $jumptype
             ];
-            //避免重复生成
+            //避免重复生成如有修改一并更改数据
             $linkArr = db('link')->where('originalurl', urlencode($queryData['url']))->find();
             if (is_array($linkArr)) {
+                $isUpdata = array_merge($linkArr, $data);
+                //每次请求时间都不一致，只合并其他不同项，创建时间保留第一次
+                $isUpdata['createtime'] = $linkArr['createtime'];
+                //如果用户更改了有效期，则需要重新计算
+                if ($data['effectivetime'] != $linkArr['effectivetime']) {
+                    $oldTimeSteamp = strtotime($linkArr['createtime']);
+                    $nowTimeSteamp = strtotime($data['createtime']);
+                    $effectivetime = $nowTimeSteamp - $oldTimeSteamp + $data['effectivetime'];
+                    $isUpdata['effectivetime'] = $effectivetime;
+                }
+                //两次数据不一致则需要更新
+                if($linkArr !== $isUpdata){
+                    db('link')->where('id', $isUpdata['id'])->update($isUpdata);
+                }
                 return json([
                     'code' => 1, 
                     'msg'  => "链接生成成功",
@@ -135,7 +163,8 @@ class Index
                 'data' => [],
             ]);
         }
-        if (!substr_count($queryData['shortUrl'], SITE_URL)) {
+        $siteUrl = $_SERVER['REQUEST_SCHEME']."://".$_SERVER['SERVER_NAME']."/";
+        if (!substr_count($queryData['shortUrl'], $siteUrl)) {
             return json([
                 'code' => 0,
                 'msg'  => "URL格式错误，或此URL不属于本站！",

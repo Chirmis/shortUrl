@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>shortURL短链接系统</title>
+</head>
+<body>
+    {if ($type == 1)}
+        <!-- 应用内打开 -->
+        <iframe src="{$url}" frameborder="0" id="iframe"></iframe>
+    {elseif ($type == 2) /}
+        <!-- 提示 -->
+        <img src="https://ae01.alicdn.com/kf/Ha28bb69a02f84bcb9e3c9c15308d9faay.png" alt="" id="imgBack">
+        <a href="{$url}" id="jumpUrl"></a>
+    {else /}
+    {/if}
+</body>
+<script src="__STATIC__/index/js/jquery.min.js"></script>
+<script>
+    var u = navigator.userAgent;
+    if (u.indexOf('MicroMessenger/7') > -1) {
+        
+    } else if (u.indexOf('MQQBrowser/6.2') > -1 && u.indexOf("QQ/8") > -1) {
+        setTimeout(function(){
+            window.location.href = "https://jq.qq.com/?_wv=1027&k=5IYHN0t";
+        }, 4000);
+    }else{
+        window.location.href = $("#jumpUrl").attr('href');
+    }
+    // if (u.indexOf('Intel Mac OS') > -1) {
+    //     console.log("MacOS操作系统");
+    // }else if (u.indexOf('Windows') > -1 && u.indexOf('Win') >-1) {
+    //     console.log("Windows操作系统");
+    // }else{
+    //     if (u.indexOf('Android') > -1 || u.indexOf('Linux') > -1) {
+            
+    //     } else if (u.indexOf('iPhone') > -1) {
+    //         console.log("苹果手机");
+    //     } else if (u.indexOf('Windows Phone') > -1) {
+    //         console.log("Windows Phone");
+    //     } else if (u.indexOf("iPad") > -1) {
+    //         console.log("iPad");
+    //     }
+    // }
+    
+    console.log(window);
+    $("#iframe").attr({
+        "width": window.screen.width,
+        "height" : window.screen.height
+    });
+    $("#imgBack").attr({
+        "width": window.screen.width,
+        "height" : window.screen.height
+    });
+</script>
+</html>

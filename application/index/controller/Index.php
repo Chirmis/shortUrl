@@ -32,7 +32,13 @@ class Index extends Base
                     //存在ID则为用户数据缓存,否则为未登录状态缓存
                     db('link')->where('id', $data['id'])->setInc('click');
                 }
-                return $this->redirect(urldecode($originalurl), 302);
+                $originalurl = urldecode($originalurl);
+                //判断跳转类型
+                if ($data['jumptype'] != 0) {
+                    return $this->redirect("/safeJump?type=".$data['jumptype']."&url=$originalurl");
+                }else {
+                    return $this->redirect($originalurl, 302);
+                }
             }else {
                 return $this->redirect("/", 301);
             }
@@ -53,8 +59,23 @@ class Index extends Base
             Cache::set($code, $chcheText, $linkInfo['effectivetime']);
             db('link')->where('id', $linkInfo['id'])->setInc('click');
             $originalurl = urldecode($linkInfo['originalurl']);
-            return $this->redirect($originalurl, 302);
+            //判断跳转类型
+            if ($linkInfo['jumptype'] != 0) {
+                return $this->redirect("/safeJump?type=".$linkInfo['jumptype']."&url=$originalurl");
+            }else {
+                return $this->redirect($originalurl, 302);
+            }
         }
         return $this->redirect("/", 301);
+    }
+
+    public function safeJump()
+    {
+        $queryData = input();
+        $this->assign([
+            'url'  => $queryData['url'] ? : "https://www.zxit.top/",
+            'type' => $queryData['type']
+        ]);
+        return $this->fetch();
     }
 }
