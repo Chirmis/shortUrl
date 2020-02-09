@@ -100,6 +100,7 @@ class Index
                 //两次数据不一致则需要更新
                 if($linkArr !== $isUpdata){
                     db('link')->where('id', $isUpdata['id'])->update($isUpdata);
+                    Cache::set($linkArr['code'], json_encode($isUpdata), $isUpdata['effectivetime']);
                 }
                 return json([
                     'code' => 1, 
