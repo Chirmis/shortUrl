@@ -16,6 +16,7 @@ Route::group('/', function(){
     Route::rule('user/login', 'index/Login/login');
     Route::rule('user/register', 'index/Register/register');
     Route::rule('user/logout', 'index/Login/logout');
+    Route::rule('/safeJump', 'index/index/safeJump');
 });
 
 //后台路由组
