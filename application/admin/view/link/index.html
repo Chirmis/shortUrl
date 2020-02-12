@@ -121,7 +121,7 @@
 					changeUserStatus("确定要批量停用吗？", 0);
 					break;
 				case "batchDel":
-					batchDel();
+					del("确定要批量删除吗？");
 					break;
 				case "add":
 					add();
@@ -157,7 +157,7 @@
 			}
 		}
 
-		//更改用户状态
+		//更改链接状态
 		function changeUserStatus(msg, changeStatus){
 			okLayer.confirm(msg, function (index) {
 				layer.close(index);
@@ -186,46 +186,40 @@
 			});
 		}
 
-		//删除用户
-		function batchDel() {
-			okLayer.confirm("确定要批量删除吗？", function (index) {
+		//删除链接
+		function del(data) {
+			var msg;
+			var ids;
+			if(typeof data == 'number'){
+				msg = "确定要删除吗？"
+				ids = data;
+			}else{
+				msg = data;
+				ids = getTableCheckObj(table);
+			}
+			okLayer.confirm(msg, function (index) {
 				layer.close(index);
-				let idsStr = okUtils.tableBatchCheck(table);
-				if (idsStr) {
-					okUtils.ajax("/user/deleteUser", "delete", {idsStr: idsStr}, true).done(function (response) {
-						console.log(response);
-						okUtils.tableSuccessMsg(response.msg);
-					}).fail(function (error) {
-						console.log(error)
+				if(!ids){
+					return false;
+				}else{
+					$.ajax({
+						url: "/admin/link/delLink",
+						method: 'DELETE',
+						data: {
+							ids:ids
+						},
+						success: function (res) {
+							var iconCode = (res.code == 1) ? 1 : 0;
+							layer.msg(res.msg, {icon: iconCode, time: 1000}, function () {
+								$(".layui-laypage-btn")[0].click();
+							});
+						},
+						error: function (err){
+							console.log(err);
+						}
 					});
 				}
 			});
-		}
-
-		// function add() {
-		// 	okLayer.open("添加用户", "user-add.html", "90%", "90%", null, function () {
-		// 		userTable.reload();
-		// 	})
-		// }
-
-		function edit(data) {
-			okLayer.open("更新用户", "user-edit.html", "90%", "90%", function (layero) {
-				let iframeWin = window[layero.find("iframe")[0]["name"]];
-				iframeWin.initForm(data);
-			}, function () {
-				userTable.reload();
-			})
-		}
-
-		function del(id) {
-			okLayer.confirm("确定要删除吗？", function () {
-				okUtils.ajax("/user/deleteUser", "delete", {idsStr: id}, true).done(function (response) {
-					console.log(response);
-					okUtils.tableSuccessMsg(response.msg);
-				}).fail(function (error) {
-					console.log(error)
-				});
-			})
 		}
 
         function formatDate(timestamp){

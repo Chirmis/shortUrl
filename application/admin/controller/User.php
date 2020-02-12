@@ -94,4 +94,19 @@ class User extends Base
             'count'=> count($res),
         ], 200);
     }
+
+    public function delUser()
+    {
+        if(request()->isDelete()){
+            $UserModel = new UserModel();
+            $delData = request()->delete();
+            $idsStr = rtrim($delData['ids'], ",");
+            $idsArr = explode(',', $idsStr);
+            if($UserModel::destroy($idsArr) !== false){
+                return json(['code'=>1, 'msg'=>'操作成功！'], 200);
+            }else {
+                return json(['code'=>0, 'msg'=>'操作失败！'], 200);
+            }
+        }
+    }
 }

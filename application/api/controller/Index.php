@@ -86,31 +86,8 @@ class Index
             ];
             //避免重复生成如有修改一并更改数据
             $linkArr = db('link')->where('originalurl', urlencode($queryData['url']))->find();
-            if (is_array($linkArr)) {
-                $isUpdata = array_merge($linkArr, $data);
-                //每次请求时间都不一致，只合并其他不同项，创建时间保留第一次
-                $isUpdata['createtime'] = $linkArr['createtime'];
-                //如果用户更改了有效期，则需要重新计算
-                if ($data['effectivetime'] != $linkArr['effectivetime']) {
-                    $oldTimeSteamp = strtotime($linkArr['createtime']);
-                    $nowTimeSteamp = strtotime($data['createtime']);
-                    $effectivetime = $nowTimeSteamp - $oldTimeSteamp + $data['effectivetime'];
-                    $isUpdata['effectivetime'] = $effectivetime;
-                }
-                //两次数据不一致则需要更新
-                if($linkArr !== $isUpdata){
-                    db('link')->where('id', $isUpdata['id'])->update($isUpdata);
-                    Cache::set($linkArr['code'], json_encode($isUpdata), $isUpdata['effectivetime']);
-                }
-                return json([
-                    'code' => 1, 
-                    'msg'  => "链接生成成功",
-                    'data' => [
-                        'shortUrl'   => $siteUrl . $linkArr['code'],
-                        'oldUrl'     => urldecode($queryData['url']),
-                        'effectTime' => $linkArr['effectivetime'],
-                    ],
-                ]);
+            if($linkArr){
+                return $this->upData($linkArr, $data, $siteUrl, true);
             }
             //首次添加则写入数据库
             if (db('link')->insert($data)) {
@@ -134,13 +111,23 @@ class Index
             //尚未登录存缓存
             //未登录时间不能为永久
             $time = ($time == 0) ? 3600 : $time;
+            $time = (int)$time;
             $data = [
                 'effectivetime'=> $time,
                 'originalurl'  => $queryData['url'],
                 'code'         => $code,
+                'jumptype'     => $jumptype,
+                'createtime'   => date('Y-m-d H:i:s', time()),
             ];
+            $old = Cache::get($code);
+            if($old && !is_null($old)){
+                $linkArr = json_decode($old, true);
+                return $this->upData($linkArr, $data, $siteUrl);
+            }
+            //第一次使用
             $chcheText = json_encode($data);
             Cache::set($code, $chcheText, $time);
+
             return json([
                 'code' => 1, 
                 'msg'  => "链接生成成功,有效期为:".$time."秒",
@@ -223,5 +210,44 @@ class Index
             'msg'  => "URL格式错误，或此URL不属于本站！",
             'data' => [],
         ]);
+    }
+
+    private function upData($linkArr, $data, $siteUrl, $login=false)
+    {
+        if (is_array($linkArr)) {
+            $isUpdata = array_merge($linkArr, $data);
+            //每次请求时间都不一致，只合并其他不同项，创建时间保留第一次
+            $isUpdata['createtime'] = $linkArr['createtime'];
+            //如果用户更改了有效期，则需要重新计算
+            if ($data['effectivetime'] != $linkArr['effectivetime']) {
+                $oldTimeSteamp = strtotime($linkArr['createtime']);
+                $nowTimeSteamp = strtotime($data['createtime']);
+                $effectivetime = $nowTimeSteamp - $oldTimeSteamp + $data['effectivetime'];
+                $isUpdata['effectivetime'] = $effectivetime;
+            }
+            if($isUpdata['effectivetime'] > 4294967295){
+                return json([
+                    'code' => 0, 
+                    'msg'  => "从创建时间到今已太久，建议登录生成永久链接",
+                    'data' => [],
+                ]);
+            }
+            //两次数据不一致则需要更新，否则不需要
+            if($linkArr !== $isUpdata){
+                if($login){
+                    db('link')->where('id', $isUpdata['id'])->update($isUpdata);
+                }
+                Cache::set($linkArr['code'], json_encode($isUpdata), $isUpdata['effectivetime']);
+            }
+            return json([
+                'code' => 1, 
+                'msg'  => "链接生成成功",
+                'data' => [
+                    'shortUrl'   => $siteUrl . $linkArr['code'],
+                    'oldUrl'     => urldecode($data['originalurl']),
+                    'effectTime' => $linkArr['effectivetime'],
+                ],
+            ]);
+        }
     }
 }

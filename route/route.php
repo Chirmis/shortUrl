@@ -42,6 +42,7 @@ Route::group('admin', function(){
         Route::rule('/linkList', 'admin/link/linkList');
         Route::rule('/linkSearch', 'admin/link/linkSearch');
         Route::rule('/changeLinkStatus', 'admin/link/changeLinkStatus');
+        Route::rule('/delLink', 'admin/link/delLink');
     });
 
     //用户管理路由组
@@ -50,6 +51,7 @@ Route::group('admin', function(){
         Route::rule('/userList', 'admin/user/userList');
         Route::rule('/searchUser', 'admin/user/searchUser');
         Route::rule('/changeUserStatus', 'admin/user/changeUserStatus');
+        Route::rule('/delUser', 'admin/user/delUser');
     });
 });
 

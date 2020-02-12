@@ -101,4 +101,19 @@ class Link extends Base
             }
         }
     }
+
+    public function delLink()
+    {
+        if(request()->isDelete()){
+            $LinkModel = new LinkModel();
+            $delData = request()->delete();
+            $idsStr = rtrim($delData['ids'], ",");
+            $idsArr = explode(',', $idsStr);
+            if($LinkModel::destroy($idsArr) !== false){
+                return json(['code'=>1, 'msg'=>'操作成功！'], 200);
+            }else {
+                return json(['code'=>0, 'msg'=>'操作失败！'], 200);
+            }
+        }
+    }
 }
