@@ -35,6 +35,9 @@ class Index extends Base
                 $originalurl = urldecode($originalurl);
                 //判断跳转类型
                 if ($data['jumptype'] != 0) {
+                    if($data['jumptype'] == 1){
+                        return $this->safeJump($data['jumptype'], $originalurl);
+                    }
                     return $this->redirect("/safeJump?type=".$data['jumptype']."&url=$originalurl");
                 }else {
                     return $this->redirect($originalurl, 302);
@@ -61,6 +64,9 @@ class Index extends Base
             $originalurl = urldecode($linkInfo['originalurl']);
             //判断跳转类型
             if ($linkInfo['jumptype'] != 0) {
+                if($data['jumptype'] == 1){
+                    return $this->safeJump($linkInfo['jumptype'], $originalurl);
+                }
                 return $this->redirect("/safeJump?type=".$linkInfo['jumptype']."&url=$originalurl");
             }else {
                 return $this->redirect($originalurl, 302);
@@ -69,13 +75,17 @@ class Index extends Base
         return $this->redirect("/", 301);
     }
 
-    public function safeJump()
+    public function safeJump($type=false, $url=false)
     {
         $queryData = input();
+        if($type && $url){
+            $queryData['type'] = $type;
+            $queryData['url'] = $url;
+        }
         $this->assign([
             'url'  => $queryData['url'] ? : "https://www.zxit.top/",
             'type' => $queryData['type']
         ]);
-        return $this->fetch();
+        return $this->fetch('safe_jump');
     }
 }
