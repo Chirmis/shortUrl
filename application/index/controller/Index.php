@@ -35,7 +35,7 @@ class Index extends Base
                 $originalurl = urldecode($originalurl);
                 //判断跳转类型
                 if ($data['jumptype'] != 0) {
-                    if($data['jumptype'] == 1){
+                    if($data['jumptype'] == 2){
                         return $this->safeJump($data['jumptype'], $originalurl);
                     }
                     return $this->redirect("/safeJump?type=".$data['jumptype']."&url=$originalurl");
@@ -64,7 +64,7 @@ class Index extends Base
             $originalurl = urldecode($linkInfo['originalurl']);
             //判断跳转类型
             if ($linkInfo['jumptype'] != 0) {
-                if($linkInfo['jumptype'] == 1){
+                if($linkInfo['jumptype'] == 2){
                     return $this->safeJump($linkInfo['jumptype'], $originalurl);
                 }
                 return $this->redirect("/safeJump?type=".$linkInfo['jumptype']."&url=$originalurl");
